@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ds-do
+spec:
+  selector:
+    matchLabels:
+      app: ds-do
+  template:
+    metadata:
+      labels:
+        app: ds-do
+    spec:
+      nodeSelector:
+          topology.kubernetes.io/region: digitalocean
+      containers:
+      - name: ds-do
+        image: webofmars/go-whoami
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ds-do
+spec:
+  type: LoadBalancer
+  selector:
+    app: ds-do
+  ports:
+  - port: 80
+    targetPort: 3000

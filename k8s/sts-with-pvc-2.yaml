@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: sts-with-pvc-2
+spec:
+  replicas: 3
+  serviceName: sts-with-pvc-2
+  selector:
+    matchLabels:
+      app: sts-with-pvc-2
+  volumeClaimTemplates:
+  - apiVersion: v1
+    kind: PersistentVolumeClaim
+    metadata:
+      name: sts-with-pvc-2
+      labels:
+        app: sts-with-pvc-2
+    spec:
+      resources:
+        requests:
+          storage: 1Gi
+      volumeMode: Filesystem
+      storageClassName: local-path
+      accessModes:
+        - ReadWriteOnce
+  template:
+    metadata:
+      labels:
+        app: sts-with-pvc-2
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+          - labelSelector:
+              matchExpressions:
+              - key: app
+                operator: In
+                values:
+                - sts-with-pvc
+            topologyKey: "topology.kubernetes.io/region"
+      containers:
+      - name: sts-with-pvc-2
+        image: alpine
+        command: ["tail", "-f", "/dev/null"]
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
